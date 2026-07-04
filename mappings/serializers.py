@@ -11,3 +11,10 @@ class MappingSerializer(serializers.ModelSerializer):
         model = PatientDoctorMapping
         fields = ['id', 'patient', 'patient_name', 'doctor', 'doctor_name', 'assigned_at']
         read_only_fields = ['assigned_at']
+
+    def validate(self, data):
+        if PatientDoctorMapping.objects.filter(
+            patient=data['patient'], doctor=data['doctor']
+        ).exists():
+            raise serializers.ValidationError('This patient is already assigned to this doctor.')
+        return data
