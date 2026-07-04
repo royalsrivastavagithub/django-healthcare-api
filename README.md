@@ -2,7 +2,7 @@
 
 A Django REST Framework backend for managing patients, doctors, and their assignments, secured with JWT authentication.
 
-## PDF Assignment Summary
+## Assignment Summary
 
 ### Requirements Fulfilled
 
@@ -49,7 +49,7 @@ A Django REST Framework backend for managing patients, doctors, and their assign
 
 ---
 
-## Extras Beyond the PDF
+## Extras Beyond the Assignment
 
 These were added to improve code quality, security, and developer experience:
 
@@ -66,7 +66,8 @@ These were added to improve code quality, security, and developer experience:
 | **`.env.example`** | Documents required environment variables for new developers |
 | **`.gitignore` with `.env`** | Prevents accidental commit of secrets |
 | **`requirements.txt`** | Pin-installed with hashes — allows `pip install -r requirements.txt` |
-| **59 automated tests** | Covers every endpoint, every HTTP method, permissions, validation, auth failures, and edge cases — run with `uv run python manage.py test` |
+| **Doctor detail/update/delete scoped to creator** | The assignment defines doctor list as "all doctors" but doesn't scope detail/modify. We restrict these to the creator as defense-in-depth, matching the patient pattern. All users still see every doctor in the list view. |
+| **60 automated tests** | Covers every endpoint, every HTTP method, permissions, validation, auth failures, and edge cases — run with `uv run python manage.py test` |
 
 ## Setup
 
@@ -74,5 +75,5 @@ These were added to improve code quality, security, and developer experience:
 2. Copy `.env.example` to `.env` and fill in your PostgreSQL credentials
 3. Run `uv sync` (or `pip install -r requirements.txt`)
 4. Run `uv run python manage.py migrate`
-5. Run `uv run python manage.py test` (59 tests)
+5. Run `uv run python manage.py test` (60 tests)
 6. Run `uv run python manage.py runserver`
