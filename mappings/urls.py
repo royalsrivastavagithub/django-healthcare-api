@@ -1,8 +1,11 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
-from mappings import views
+from mappings.views import MappingViewSet
+
+router = DefaultRouter()
+router.register('', MappingViewSet, basename='mappings')
 
 urlpatterns = [
-    path('', views.MappingListCreateView.as_view(), name='mapping-list-create'),
-    path('<int:pk>/', views.MappingManageView.as_view(), name='mapping-manage'),
+    path('', include(router.urls)),
 ]
