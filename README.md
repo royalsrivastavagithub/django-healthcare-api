@@ -76,4 +76,4 @@ These were added to improve code quality, security, and developer experience:
 3. Run `uv sync` (or `pip install -r requirements.txt`)
 4. Run `uv run python manage.py migrate`
 5. Run `uv run python manage.py test` (60 tests)
-6. Run `uv run python manage.py runserver`
+6. Run `uv run python manage.py runserver` 
