@@ -9,5 +9,8 @@ wheels/
 # Virtual environments
 .venv
 
+# Environment variables
+.env
+
 #files
 Django Assignment_1.pdf
