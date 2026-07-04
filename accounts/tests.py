@@ -52,3 +52,37 @@ class AuthTests(APITestCase):
         }, format='json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertIn('access', resp.data)
+
+    def test_register_missing_email(self):
+        resp = self.client.post('/api/auth/register/', {
+            'name': 'No Email', 'password': 'testpass123'
+        }, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('email', resp.data)
+
+    def test_register_missing_name(self):
+        resp = self.client.post('/api/auth/register/', {
+            'email': 'noname@test.com', 'password': 'testpass123'
+        }, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('name', resp.data)
+
+    def test_register_invalid_email_format(self):
+        resp = self.client.post('/api/auth/register/', {
+            'name': 'Bad Email', 'email': 'not-an-email', 'password': 'testpass123'
+        }, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('email', resp.data)
+
+    def test_refresh_invalid_token(self):
+        resp = self.client.post('/api/auth/token/refresh/', {
+            'refresh': 'invalid-token'
+        }, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_register_empty_name(self):
+        resp = self.client.post('/api/auth/register/', {
+            'name': '', 'email': 'empty@test.com', 'password': 'testpass123'
+        }, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('name', resp.data)

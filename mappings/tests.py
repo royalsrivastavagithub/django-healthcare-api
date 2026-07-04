@@ -72,3 +72,47 @@ class MappingTests(APITestCase):
     def test_delete_nonexistent_mapping(self):
         resp = self.client.delete('/api/mappings/999/', format='json')
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_mapping_nonexistent_patient(self):
+        resp = self.client.post('/api/mappings/', {
+            'patient': 99999, 'doctor': self.doctor.id
+        }, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_mapping_nonexistent_doctor(self):
+        resp = self.client.post('/api/mappings/', {
+            'patient': self.patient.id, 'doctor': 99999
+        }, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_mapping_invalid_token(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer invalid-token')
+        resp = self.client.post('/api/mappings/', {
+            'patient': self.patient.id, 'doctor': self.doctor.id
+        }, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_mappings_invalid_token(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer invalid-token')
+        resp = self.client.get(f'/api/mappings/{self.patient.id}/', format='json')
+        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_mapping_invalid_token(self):
+        mapping = PatientDoctorMapping.objects.create(patient=self.patient, doctor=self.doctor)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer invalid-token')
+        resp = self.client.delete(f'/api/mappings/{mapping.id}/', format='json')
+        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_same_patient_different_doctor(self):
+        doctor2 = Doctor.objects.create(
+            created_by=self.user, name='Dr. Second', specialization='Neuro',
+            contact_number='5556667777', email='second@h.com', years_of_experience=8
+        )
+        self.client.post('/api/mappings/', {
+            'patient': self.patient.id, 'doctor': self.doctor.id
+        }, format='json')
+        resp = self.client.post('/api/mappings/', {
+            'patient': self.patient.id, 'doctor': doctor2.id
+        }, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(PatientDoctorMapping.objects.filter(patient=self.patient)), 2)

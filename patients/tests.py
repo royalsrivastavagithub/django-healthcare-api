@@ -99,3 +99,45 @@ class PatientTests(APITestCase):
     def test_validate_contact_number(self):
         resp = self._create_patient(contact_number='abc')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_missing_required_fields(self):
+        resp = self.client.post('/api/patients/', {}, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('name', resp.data)
+        self.assertIn('age', resp.data)
+
+    def test_create_patient_invalid_token(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer invalid-token')
+        resp = self._create_patient()
+        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_nonexistent_patient(self):
+        resp = self.client.get('/api/patients/99999/', format='json')
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_nonexistent_patient(self):
+        resp = self.client.put('/api/patients/99999/', {
+            'name': 'Ghost', 'age': 30, 'gender': 'Male',
+            'contact_number': '1234567890', 'address': 'Nowhere'
+        }, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_nonexistent_patient(self):
+        resp = self.client.delete('/api/patients/99999/', format='json')
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_patch_partial_update(self):
+        create_resp = self._create_patient()
+        pid = create_resp.data['id']
+        resp = self.client.patch(f'/api/patients/{pid}/', {'name': 'Patched Name'}, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.data['name'], 'Patched Name')
+        self.assertEqual(resp.data['age'], 30)
+
+    def test_create_with_blank_optionals(self):
+        resp = self.client.post('/api/patients/', {
+            'name': 'Minimal', 'age': 20, 'gender': 'Male',
+            'contact_number': '1234567890', 'address': 'Somewhere'
+        }, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(resp.data['medical_history'], '')
